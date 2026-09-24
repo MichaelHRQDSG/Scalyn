@@ -1,0 +1,15 @@
+# Web API
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.34,<1.0
+
+# 千问 OpenAI 兼容客户端与配置
+openai>=1.68,<3.0
+pydantic>=2.10,<3.0
+pydantic-settings>=2.8,<3.0
+tenacity>=9.0,<10.0
+
+# 开发与测试
+httpx>=0.28,<1.0
+pytest>=8.3,<9.0
+pytest-asyncio>=0.25,<1.0
+ruff>=0.11,<1.0

@@ -1,0 +1,71 @@
+{
+  "user": {
+    "user_id": "anonymous-001",
+    "age": 29,
+    "occupation": "产品经理",
+    "additional_info": {
+      "work_years": 5
+    }
+  },
+  "analysis_goal": "综合分析近期压力、情绪状态、个人优势及改善方向",
+  "context": "用户近期经历项目交付高峰，以下结果仅代表本次作答时的状态。",
+  "language": "zh-CN",
+  "assessments": [
+    {
+      "scale_id": "stress-demo",
+      "scale_name": "压力感受示例量表",
+      "scale_version": "1.0",
+      "total_score": 18,
+      "max_score": 40,
+      "severity": "中等",
+      "dimensions": [
+        {
+          "name": "失控感",
+          "score": 10,
+          "max_score": 20,
+          "level": "中等"
+        },
+        {
+          "name": "紧张感",
+          "score": 8,
+          "max_score": 20,
+          "level": "中等"
+        }
+      ],
+      "answers": [
+        {
+          "question_id": "s1",
+          "question_text": "最近是否感到事情超出掌控？",
+          "selected": {
+            "option_id": "often",
+            "option_text": "经常",
+            "value": 3
+          },
+          "dimension": "失控感"
+        }
+      ]
+    },
+    {
+      "scale_id": "resilience-demo",
+      "scale_name": "心理韧性示例量表",
+      "total_score": 31,
+      "max_score": 50,
+      "severity": "中等偏高",
+      "dimensions": [
+        {
+          "name": "问题解决",
+          "score": 17,
+          "max_score": 25,
+          "level": "较好"
+        },
+        {
+          "name": "支持利用",
+          "score": 14,
+          "max_score": 25,
+          "level": "中等"
+        }
+      ],
+      "answers": []
+    }
+  ]
+}
