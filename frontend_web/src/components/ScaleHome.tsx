@@ -5,7 +5,11 @@ import { scales, type ScaleItem } from "../data/scales";
 import { Atmosphere } from "./Atmosphere";
 import { ScaleCard } from "./ScaleCard";
 
-export function ScaleHome() {
+interface ScaleHomeProps {
+  onSelectScale: (scale: ScaleItem) => void;
+}
+
+export function ScaleHome({ onSelectScale }: ScaleHomeProps) {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,7 +21,11 @@ export function ScaleHome() {
   }, [notice]);
 
   const handleSelect = (scale: ScaleItem) => {
-    setNotice(`「${scale.name}」答题页稍后开放，当前先确认入口可用`);
+    if (scale.id === "swls") {
+      onSelectScale(scale);
+      return;
+    }
+    setNotice(`「${scale.name}」答题页稍后开放`);
   };
 
   return (
@@ -32,7 +40,7 @@ export function ScaleHome() {
         >
           <h1 className="brand-mark">Scalyn</h1>
           <p className="brand-lead">在温和的节奏里，选择此刻想了解自己的量表。</p>
-          <p className="brand-note">八个入口 · 单页专注 · 答题流程即将接入</p>
+          <p className="brand-note">八个入口 · 单页专注 · SWLS 已可作答</p>
         </motion.header>
 
         <section className="scale-grid" aria-label="量表入口">

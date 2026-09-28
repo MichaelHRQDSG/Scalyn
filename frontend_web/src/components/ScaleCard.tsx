@@ -28,9 +28,9 @@ export function ScaleCard({ scale, index, onSelect }: ScaleCardProps) {
       <h2 className="scale-card__name">{scale.name}</h2>
       <p className="scale-card__blurb">{scale.blurb}</p>
       <div className="scale-card__footer">
-        <span>入口已准备</span>
+        <span>{scale.id === "swls" ? "可开始作答" : "入口已准备"}</span>
         <span className="scale-card__cta">
-          选择
+          {scale.id === "swls" ? "进入" : "选择"}
           <span className="scale-card__cta-arrow" aria-hidden="true">
             →
           </span>
