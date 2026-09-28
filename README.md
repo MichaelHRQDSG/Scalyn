@@ -1,4 +1,4 @@
-﻿# Scalyn
+# Scalyn
 
 Scalyn 是一个使用前沿AI模型对同一用户的多个心理、行为或能力量表进行综合分析，并返回结构化多维度完整报告的 FastAPI 框架。
 
@@ -99,6 +99,28 @@ QWEN_RESPONSE_FORMAT=json_schema
 
 无论使用哪种模式，服务都会使用 `FullAnalysisReport` 对返回结果再次校验，并在失败时自动重试。
 
+## 前端文本分析台
+
+目录：`frontend`
+
+```powershell
+# 终端 1：启动后端
+conda activate scalyn
+cd D:\Code\VScode_File\Syapp\Scalyn
+uvicorn scalyn.main:app --reload --host 127.0.0.1 --port 8000
+
+# 终端 2：启动前端
+cd D:\Code\VScode_File\Syapp\Scalyn\frontend
+npm install
+npm run dev
+```
+
+打开 <http://127.0.0.1:3000>：
+
+- 输入任意文本后点击“生成分析报告”
+- 每次调用会保存为 `frontend/data/history/<id>.json`
+- 右侧可查看历史调用列表
+
 ## 服务调用测试
 
 在项目根目录直接调用分析服务（会真实请求千问）：
@@ -136,4 +158,5 @@ ruff check .
 
 - [OpenAI Chat API 参考](https://platform.qianwenai.com/docs/api-reference/chat/openai-chat)
 - [结构化输出说明](https://platform.qianwenai.com/docs/developer-guides/text-generation/structured-output)
+
 
