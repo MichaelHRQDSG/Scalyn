@@ -1,13 +1,13 @@
-# Scalyn Frontend
+# Scalyn Playground
 
-简单的 Next.js 文本分析台。
+简易的配置与 API 测试 Web（Playground）。
 
 ## 启动
 
-先启动后端（8000），再启动前端：
+先启动后端（8000），再启动试验台：
 
 ```powershell
-cd D:\Code\VScode_File\Syapp\Scalyn\frontend
+cd D:\Code\VScode_File\Syapp\Scalyn\playground
 npm install
 npm run dev
 ```

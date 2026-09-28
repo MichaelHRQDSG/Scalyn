@@ -105,11 +105,24 @@ class FullAnalysisReport(StrictModel):
     disclaimer: str
 
 
+class ModelUsageMeta(StrictModel):
+    max_context_tokens: int = Field(description='当前模型支持的最大上下文窗口（tokens）')
+    input_tokens: int = Field(description='本次成功调用的 input / prompt tokens')
+    output_tokens: int = Field(description='本次成功调用的 output / completion tokens')
+    total_tokens: int = Field(description='本次成功调用的 total tokens（input + output）')
+    actual_token_consumption: int = Field(
+        description='本次分析实际消耗的 tokens（含重试各次调用合计）'
+    )
+    response_time_ms: float = Field(description='本次成功 API 调用的响应时间（毫秒）')
+    api_calls: int = Field(description='本次分析实际发起的大模型 API 次数（含重试）')
+
+
 class ReportMeta(StrictModel):
     report_id: str
     generated_at: datetime
     model: str
     assessment_count: int
+    usage: ModelUsageMeta
 
 
 class AnalysisResponse(StrictModel):

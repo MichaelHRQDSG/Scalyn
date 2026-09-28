@@ -12,12 +12,12 @@ build/
 .idea/
 .vscode/
 
-# frontend
-frontend/node_modules/
-frontend/.next/
-frontend/.env.local
-frontend/data/history/*.json
-!frontend/data/history/.gitkeep
+# playground (API/config test web)
+playground/node_modules/
+playground/.next/
+playground/.env.local
+playground/data/history/*.json
+!playground/data/history/.gitkeep
 
 # frontend_web (Vite)
 frontend_web/node_modules/

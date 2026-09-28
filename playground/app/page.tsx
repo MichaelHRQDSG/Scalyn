@@ -27,6 +27,15 @@ type HistoryRecord = {
       report_id?: string;
       model?: string;
       assessment_count?: number;
+      usage?: {
+        max_context_tokens?: number;
+        input_tokens?: number;
+        output_tokens?: number;
+        total_tokens?: number;
+        actual_token_consumption?: number;
+        response_time_ms?: number;
+        api_calls?: number;
+      };
     };
     report?: {
       report_title?: string;
@@ -270,7 +279,43 @@ export default function HomePage() {
               </div>
               <p style={{ color: "var(--muted)", fontSize: 13 }}>
                 {selected.id} · {new Date(selected.createdAt).toLocaleString()}
+                {selected.response?.meta?.model ? ` · 模型 ${selected.response.meta.model}` : ""}
               </p>
+
+              {selected.status === "success" && selected.response?.meta?.usage ? (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                    gap: 10,
+                    margin: "12px 0 18px",
+                  }}
+                >
+                  {[
+                    ["最大上下文", selected.response.meta.usage.max_context_tokens],
+                    ["input tokens", selected.response.meta.usage.input_tokens],
+                    ["total tokens", selected.response.meta.usage.total_tokens],
+                    ["实际消耗", selected.response.meta.usage.actual_token_consumption],
+                    ["响应时间(ms)", selected.response.meta.usage.response_time_ms],
+                    ["API 次数", selected.response.meta.usage.api_calls],
+                  ].map(([label, value]) => (
+                    <div
+                      key={String(label)}
+                      style={{
+                        border: "1px solid var(--line)",
+                        borderRadius: 12,
+                        padding: "10px 12px",
+                        background: "#fbfaf7",
+                      }}
+                    >
+                      <div style={{ fontSize: 12, color: "var(--muted)" }}>{label}</div>
+                      <div style={{ marginTop: 4, fontWeight: 700, fontSize: 16 }}>
+                        {value ?? "-"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
 
               {selected.status === "error" ? (
                 <p style={{ color: "var(--danger)", whiteSpace: "pre-wrap" }}>
@@ -385,7 +430,7 @@ export default function HomePage() {
             </button>
           </div>
           <p style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.6 }}>
-            每次调用保存在 `frontend/data/history/*.json`
+            每次调用保存在 `playground/data/history/*.json`
           </p>
           <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
             {history.length === 0 ? (

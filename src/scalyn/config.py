@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     qwen_max_tokens: int = Field(default=8000, ge=1000, le=32000)
     qwen_timeout_seconds: float = Field(default=120, gt=0)
     qwen_max_retries: int = Field(default=2, ge=0, le=5)
+    # 0 means lookup by model name; >0 overrides the context window size
+    qwen_max_context_tokens: int = Field(default=0, ge=0)
 
     @property
     def qwen_configured(self) -> bool:

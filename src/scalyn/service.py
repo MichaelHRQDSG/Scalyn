@@ -5,11 +5,16 @@ from typing import Protocol
 from uuid import uuid4
 
 from scalyn.config import Settings
-from scalyn.models import AnalysisRequest, AnalysisResponse, FullAnalysisReport, ReportMeta
+from scalyn.models import (
+    AnalysisRequest,
+    AnalysisResponse,
+    ReportMeta,
+)
+from scalyn.qwen import GenerateResult
 
 
 class ReportGenerator(Protocol):
-    async def generate(self, request: AnalysisRequest) -> FullAnalysisReport: ...
+    async def generate(self, request: AnalysisRequest) -> GenerateResult: ...
 
 
 class AnalysisService:
@@ -18,13 +23,14 @@ class AnalysisService:
         self.settings = settings
 
     async def analyze(self, request: AnalysisRequest) -> AnalysisResponse:
-        report = await self.generator.generate(request)
+        result = await self.generator.generate(request)
         return AnalysisResponse(
             meta=ReportMeta(
                 report_id=f"rpt_{uuid4().hex}",
                 generated_at=datetime.now(timezone.utc),
                 model=self.settings.qwen_model,
                 assessment_count=request.count_answer_items(),
+                usage=result.usage,
             ),
-            report=report,
+            report=result.report,
         )

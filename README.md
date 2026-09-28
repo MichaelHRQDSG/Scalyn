@@ -105,9 +105,9 @@ QWEN_RESPONSE_FORMAT=json_schema
 
 无论使用哪种模式，服务都会使用 `FullAnalysisReport` 对返回结果再次校验，并在失败时自动重试。
 
-## 前端文本分析台
+## API 试验台（playground）
 
-目录：`frontend`
+目录：`playground`（简易配置与 API 测试 Web）
 
 ```powershell
 # 终端 1：启动后端
@@ -115,8 +115,8 @@ conda activate scalyn
 cd D:\Code\VScode_File\Syapp\Scalyn
 uvicorn scalyn.main:app --reload --host 127.0.0.1 --port 8000
 
-# 终端 2：启动前端
-cd D:\Code\VScode_File\Syapp\Scalyn\frontend
+# 终端 2：启动试验台
+cd D:\Code\VScode_File\Syapp\Scalyn\playground
 npm install
 npm run dev
 ```
@@ -124,7 +124,7 @@ npm run dev
 打开 <http://127.0.0.1:3000>：
 
 - 填写三块 JSON（答题结果 / 分析信息 / 其他信息）后点击“生成分析报告”
-- 每次调用会保存为 `frontend/data/history/<id>.json`
+- 每次调用会保存为 `playground/data/history/<id>.json`
 - 右侧可查看历史调用列表
 
 ## 服务调用测试

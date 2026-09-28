@@ -1,29 +1,41 @@
 from scalyn.config import Settings
-from scalyn.models import AnalysisRequest, FullAnalysisReport
+from scalyn.models import AnalysisRequest, FullAnalysisReport, ModelUsageMeta
+from scalyn.qwen import GenerateResult
 from scalyn.service import AnalysisService
 
 
 class FakeGenerator:
-    async def generate(self, request: AnalysisRequest) -> FullAnalysisReport:
-        return FullAnalysisReport(
-            report_title="综合报告",
-            overall_summary="根据答题结果与分析信息生成的测试报告。",
-            key_strengths=["愿意了解自身状态"],
-            key_concerns=[],
-            dimensions=[],
-            cross_scale_insights=[],
-            risks=[],
-            recommendations=[
-                {
-                    "priority": "short_term",
-                    "title": "持续观察",
-                    "rationale": "当前信息有限",
-                    "actions": ["一周后复测"],
-                }
-            ],
-            follow_up_questions=[],
-            limitations=["示例数据"],
-            disclaimer="本报告不构成医学诊断。",
+    async def generate(self, request: AnalysisRequest) -> GenerateResult:
+        return GenerateResult(
+            report=FullAnalysisReport(
+                report_title="综合报告",
+                overall_summary="根据答题结果与分析信息生成的测试报告。",
+                key_strengths=["愿意了解自身状态"],
+                key_concerns=[],
+                dimensions=[],
+                cross_scale_insights=[],
+                risks=[],
+                recommendations=[
+                    {
+                        "priority": "short_term",
+                        "title": "持续观察",
+                        "rationale": "当前信息有限",
+                        "actions": ["一周后复测"],
+                    }
+                ],
+                follow_up_questions=[],
+                limitations=["示例数据"],
+                disclaimer="本报告不构成医学诊断。",
+            ),
+            usage=ModelUsageMeta(
+                max_context_tokens=131072,
+                input_tokens=1200,
+                output_tokens=800,
+                total_tokens=2000,
+                actual_token_consumption=2000,
+                response_time_ms=1234.5,
+                api_calls=1,
+            ),
         )
 
 
@@ -48,3 +60,7 @@ async def test_service_adds_report_metadata() -> None:
     assert result.meta.model == "qwen-test"
     assert result.meta.assessment_count == 2
     assert result.report.report_title == "综合报告"
+    assert result.meta.usage.input_tokens == 1200
+    assert result.meta.usage.total_tokens == 2000
+    assert result.meta.usage.max_context_tokens == 131072
+    assert result.meta.usage.response_time_ms == 1234.5

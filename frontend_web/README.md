@@ -60,8 +60,10 @@ frontend_web/
    ├─ App.tsx
    ├─ main.tsx
    ├─ data/
-   │  ├─ scales.ts            # 八张量表入口数据
-   │  └─ swls.ts              # SWLS 题目、选项与分数解读
+   │  ├─ scales.json          # 八张量表入口数据（JSON）
+   │  ├─ scales.ts            # 类型与加载
+   │  ├─ swls.json            # SWLS 题目、选项与计分规则（JSON）
+   │  └─ swls.ts              # 类型、加载与计分函数
    ├─ lib/
    │  └─ swlsProgress.ts      # 本地进度保存
    ├─ components/
@@ -72,9 +74,14 @@ frontend_web/
    └─ styles/global.css
 ```
 
+
+## 量表数据
+
+题目、选项与计分规则存放在 src/data/*.json，TypeScript 文件仅负责类型与读取/计分逻辑，不再硬编码题目内容。
+
 ## 说明
 
-- 本目录与仓库中的 `frontend/`（Next.js 分析台）相互独立。
+- 本目录与仓库中的 `playground/`（Next.js API 试验台）相互独立。
 - 目前仅 SWLS 已开放完整答题；其余量表入口会提示稍后开放。
 - 若本机启用了系统代理，而 `npm install` 异常，可在当前终端先设置：
 
