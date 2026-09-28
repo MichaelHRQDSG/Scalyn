@@ -1,8 +1,11 @@
-﻿import json
+import json
 
 from scalyn.models import AnalysisRequest, FullAnalysisReport
 
-SYSTEM_PROMPT = """你是一名谨慎、循证的心理量表综合分析助手。你的任务是把多个量表的结果和逐题回答整合为结构化报告。
+SYSTEM_PROMPT = """你是一名谨慎、循证的心理量表综合分析助手。你的任务是整合三类输入并生成结构化报告：
+1) answer_results：量表答题结果
+2) analysis_info：答题后的分析信息
+3) other_info：其他补充信息（可能为空）
 
 必须遵守：
 1. 只依据输入证据分析，不虚构常模、诊断、病史、量表结论或因果关系。
@@ -36,15 +39,14 @@ REPORT_FIELD_HINT = """
 
 
 def build_user_prompt(request: AnalysisRequest) -> str:
-    payload = request.model_dump(mode="json", exclude_none=True)
+    payload = request.model_dump(mode="json")
     schema = FullAnalysisReport.model_json_schema()
     return (
-        "请生成多维度完整版综合分析报告，并以 JSON 格式输出。分析目标："
-        f"{request.analysis_goal}\n\n"
+        "请基于以下三类输入生成多维度完整版综合分析报告，并以 JSON 格式输出。\n\n"
         f"{REPORT_FIELD_HINT}\n\n"
         "完整 JSON Schema 如下，必须严格遵守：\n"
         f"{json.dumps(schema, ensure_ascii=False, indent=2)}\n\n"
-        "输入数据如下（JSON）：\n"
+        "输入数据（answer_results / analysis_info / other_info）：\n"
         f"{json.dumps(payload, ensure_ascii=False, indent=2)}"
     )
 
@@ -59,5 +61,5 @@ def build_repair_prompt(request: AnalysisRequest, previous_content: str, validat
         "你上一次的输出：\n"
         f"{previous_content}\n\n"
         "原始分析请求：\n"
-        f"{json.dumps(request.model_dump(mode='json', exclude_none=True), ensure_ascii=False, indent=2)}"
+        f"{json.dumps(request.model_dump(mode='json'), ensure_ascii=False, indent=2)}"
     )

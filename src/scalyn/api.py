@@ -34,7 +34,7 @@ async def health(settings: Settings = Depends(get_settings)) -> dict[str, Union[
     response_model=AnalysisResponse,
     status_code=status.HTTP_200_OK,
     tags=["reports"],
-    summary="综合分析多个 AI 量表并生成完整报告",
+    summary="基于答题结果、分析信息与其他信息生成完整报告",
 )
 async def analyze_assessments(
     body: AnalysisRequest,

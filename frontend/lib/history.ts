@@ -2,14 +2,19 @@ import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 
+export type AnalyzePayload = {
+  answer_results: unknown;
+  analysis_info: unknown;
+  other_info?: unknown;
+};
+
 export type HistoryRecord = {
   id: string;
   createdAt: string;
-  inputText: string;
-  analysisGoal: string;
+  preview: string;
   status: "success" | "error";
   error?: string;
-  request?: unknown;
+  request?: AnalyzePayload;
   response?: unknown;
 };
 
@@ -58,31 +63,36 @@ export async function getHistory(id: string): Promise<HistoryRecord | null> {
   }
 }
 
-export function buildAnalyzeRequest(inputText: string, analysisGoal?: string) {
-  const text = inputText.trim();
-  const preview = text.length > 280 ? `${text.slice(0, 280)}...` : text;
+export function parseJsonField(label: string, raw: string, allowEmptyObject = false): unknown {
+  const text = raw.trim();
+  if (!text) {
+    if (allowEmptyObject) return {};
+    throw new Error(`${label} 不能为空`);
+  }
+  try {
+    const value = JSON.parse(text) as unknown;
+    if (value === null || (typeof value !== "object" && !Array.isArray(value))) {
+      throw new Error(`${label} 必须是 JSON 对象或数组`);
+    }
+    return value;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes(label)) throw error;
+    throw new Error(`${label} 不是合法 JSON`);
+  }
+}
+
+export function buildAnalyzeRequest(input: {
+  answerResultsRaw: string;
+  analysisInfoRaw: string;
+  otherInfoRaw: string;
+}): AnalyzePayload {
   return {
-    analysis_goal: (analysisGoal || "基于用户输入文本进行综合分析与建议").trim(),
-    context: text.slice(0, 5000),
-    language: "zh-CN",
-    assessments: [
-      {
-        scale_id: "free-text-input",
-        scale_name: "自由文本输入",
-        description: "前端用户直接粘贴的分析材料",
-        interpretation: text.slice(0, 8000),
-        answers: [
-          {
-            question_id: "user-text",
-            question_text: "用户提供的待分析文本",
-            selected: {
-              option_id: "full-text",
-              option_text: preview,
-              value: text.length,
-            },
-          },
-        ],
-      },
-    ],
+    answer_results: parseJsonField("量表答题结果", input.answerResultsRaw),
+    analysis_info: parseJsonField("答题后分析信息", input.analysisInfoRaw),
+    other_info: parseJsonField("其他信息", input.otherInfoRaw, true),
   };
+}
+
+export function buildPreview(payload: AnalyzePayload): string {
+  return JSON.stringify(payload.answer_results).slice(0, 80);
 }

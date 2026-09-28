@@ -15,8 +15,7 @@ export async function GET() {
         id: item.id,
         createdAt: item.createdAt,
         status: item.status,
-        analysisGoal: item.analysisGoal,
-        preview: item.inputText.slice(0, 80),
+        preview: item.preview,
         reportTitle: response?.report?.report_title ?? null,
         error: item.error ?? null,
       };

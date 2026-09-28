@@ -64,6 +64,18 @@ uvicorn scalyn.main:app --reload --host 127.0.0.1 --port 8000
 - Swagger UI：<http://127.0.0.1:8000/docs>
 - 健康检查：<http://127.0.0.1:8000/health>
 
+## API 输入格式
+
+`POST /api/v1/reports/analyze` 请求体为三个 JSON 字段：
+
+| 字段 | 说明 | 必填 |
+|------|------|------|
+| `answer_results` | 量表答题结果信息（对象或数组） | 是 |
+| `analysis_info` | 答题后的分析信息（对象或数组） | 是 |
+| `other_info` | 其他信息（对象或数组），默认 `{}` | 否 |
+
+示例见 `examples/analysis-request.json`。
+
 ## 调用示例
 
 ```powershell
@@ -75,13 +87,7 @@ Invoke-RestMethod `
   -Body $body
 ```
 
-请求中的每个量表至少应提供以下一种数据：
-
-1. `total_score`；
-2. `dimensions`；
-3. `answers`。
-
-量表计分和常模换算应尽量由确定性业务代码提前完成，再把结果交给大模型综合解释。不要让大模型替代量表原始计分程序。
+量表计分和常模换算应尽量由确定性业务代码提前完成，再通过 `answer_results` / `analysis_info` 交给大模型综合解释。
 
 ## 结构化输出模式
 
@@ -117,7 +123,7 @@ npm run dev
 
 打开 <http://127.0.0.1:3000>：
 
-- 输入任意文本后点击“生成分析报告”
+- 填写三块 JSON（答题结果 / 分析信息 / 其他信息）后点击“生成分析报告”
 - 每次调用会保存为 `frontend/data/history/<id>.json`
 - 右侧可查看历史调用列表
 

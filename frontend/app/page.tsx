@@ -6,7 +6,6 @@ type HistoryItem = {
   id: string;
   createdAt: string;
   status: "success" | "error";
-  analysisGoal: string;
   preview: string;
   reportTitle: string | null;
   error: string | null;
@@ -15,10 +14,14 @@ type HistoryItem = {
 type HistoryRecord = {
   id: string;
   createdAt: string;
-  inputText: string;
-  analysisGoal: string;
+  preview: string;
   status: "success" | "error";
   error?: string;
+  request?: {
+    answer_results?: unknown;
+    analysis_info?: unknown;
+    other_info?: unknown;
+  };
   response?: {
     meta?: {
       report_id?: string;
@@ -60,9 +63,43 @@ const panelStyle: CSSProperties = {
   padding: 24,
 };
 
+const textareaStyle: CSSProperties = {
+  width: "100%",
+  border: "1px solid var(--line)",
+  borderRadius: 12,
+  padding: 14,
+  resize: "vertical",
+  background: "#fbfaf7",
+  lineHeight: 1.55,
+  fontFamily: "Consolas, Monaco, monospace",
+  fontSize: 13,
+};
+
+const DEFAULT_ANSWER_RESULTS = `{
+  "assessments": [
+    {
+      "scale_id": "stress-demo",
+      "scale_name": "压力感受示例量表",
+      "total_score": 18,
+      "max_score": 40,
+      "severity": "中等"
+    }
+  ]
+}`;
+
+const DEFAULT_ANALYSIS_INFO = `{
+  "summary": "压力处于中等水平",
+  "dimensions": [
+    { "name": "失控感", "score": 10, "max_score": 20, "level": "中等" }
+  ]
+}`;
+
+const DEFAULT_OTHER_INFO = `{}`;
+
 export default function HomePage() {
-  const [text, setText] = useState("");
-  const [goal, setGoal] = useState("基于用户输入文本进行综合分析与建议");
+  const [answerResultsRaw, setAnswerResultsRaw] = useState(DEFAULT_ANSWER_RESULTS);
+  const [analysisInfoRaw, setAnalysisInfoRaw] = useState(DEFAULT_ANALYSIS_INFO);
+  const [otherInfoRaw, setOtherInfoRaw] = useState(DEFAULT_OTHER_INFO);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -94,9 +131,17 @@ export default function HomePage() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, analysisGoal: goal }),
+        body: JSON.stringify({
+          answerResultsRaw,
+          analysisInfoRaw,
+          otherInfoRaw,
+        }),
       });
-      const record = (await response.json()) as HistoryRecord;
+      const record = (await response.json()) as HistoryRecord & { detail?: string };
+      if (!response.ok && !record.id) {
+        setError(record.detail || "请求失败");
+        return;
+      }
       await loadHistory();
       setSelected(record);
       if (record.status === "error") {
@@ -118,10 +163,10 @@ export default function HomePage() {
           SCALYN
         </div>
         <h1 style={{ margin: "8px 0 10px", fontSize: 36, fontWeight: 700 }}>
-          文本分析台
+          量表分析台
         </h1>
         <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.7 }}>
-          输入任意文本，点击生成报告。每次调用会保存为一个 JSON，历史记录可在右侧查看。
+          输入答题结果、答题后分析信息与其他信息（JSON），点击生成报告。每次调用保存为一个 JSON。
         </p>
       </header>
 
@@ -135,52 +180,47 @@ export default function HomePage() {
       >
         <section style={panelStyle}>
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
-            分析目标
-          </label>
-          <input
-            value={goal}
-            onChange={(event) => setGoal(event.target.value)}
-            style={{
-              width: "100%",
-              border: "1px solid var(--line)",
-              borderRadius: 12,
-              padding: "12px 14px",
-              marginBottom: 16,
-              background: "#fbfaf7",
-            }}
-          />
-
-          <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
-            输入文本
+            量表答题结果 answer_results（JSON）
           </label>
           <textarea
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            placeholder="粘贴量表结果、访谈笔记或任意待分析文本..."
-            rows={12}
-            style={{
-              width: "100%",
-              border: "1px solid var(--line)",
-              borderRadius: 12,
-              padding: 14,
-              resize: "vertical",
-              background: "#fbfaf7",
-              lineHeight: 1.6,
-            }}
+            value={answerResultsRaw}
+            onChange={(event) => setAnswerResultsRaw(event.target.value)}
+            rows={10}
+            style={textareaStyle}
+          />
+
+          <label style={{ display: "block", fontWeight: 600, margin: "16px 0 8px" }}>
+            答题后分析信息 analysis_info（JSON）
+          </label>
+          <textarea
+            value={analysisInfoRaw}
+            onChange={(event) => setAnalysisInfoRaw(event.target.value)}
+            rows={8}
+            style={textareaStyle}
+          />
+
+          <label style={{ display: "block", fontWeight: 600, margin: "16px 0 8px" }}>
+            其他信息 other_info（JSON，可空对象）
+          </label>
+          <textarea
+            value={otherInfoRaw}
+            onChange={(event) => setOtherInfoRaw(event.target.value)}
+            rows={5}
+            style={textareaStyle}
           />
 
           <div style={{ display: "flex", gap: 12, marginTop: 16, alignItems: "center" }}>
             <button
               type="button"
-              disabled={loading || !text.trim()}
+              disabled={loading}
               onClick={() => void onAnalyze()}
               style={{
                 border: "none",
                 borderRadius: 999,
                 padding: "12px 22px",
-                background: loading || !text.trim() ? "#9bb5a8" : "var(--accent)",
+                background: loading ? "#9bb5a8" : "var(--accent)",
                 color: "#fff",
-                cursor: loading || !text.trim() ? "not-allowed" : "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
                 fontWeight: 700,
               }}
             >
@@ -239,11 +279,9 @@ export default function HomePage() {
               ) : (
                 <>
                   <p style={{ lineHeight: 1.8 }}>{report?.overall_summary}</p>
-
                   <div style={{ display: "grid", gap: 16, marginTop: 16 }}>
                     <Block title="关键优势" items={report?.key_strengths} />
                     <Block title="关注点" items={report?.key_concerns} />
-
                     {report?.dimensions?.length ? (
                       <div>
                         <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>维度分析</h3>
@@ -269,7 +307,6 @@ export default function HomePage() {
                         </div>
                       </div>
                     ) : null}
-
                     {report?.recommendations?.length ? (
                       <div>
                         <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>建议</h3>
@@ -298,7 +335,6 @@ export default function HomePage() {
                         </div>
                       </div>
                     ) : null}
-
                     {report?.disclaimer ? (
                       <p style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.7 }}>
                         {report.disclaimer}
@@ -351,7 +387,6 @@ export default function HomePage() {
           <p style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.6 }}>
             每次调用保存在 `frontend/data/history/*.json`
           </p>
-
           <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
             {history.length === 0 ? (
               <div style={{ color: "var(--muted)", fontSize: 14 }}>暂无历史记录</div>
@@ -375,7 +410,7 @@ export default function HomePage() {
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                     <strong style={{ fontSize: 14 }}>
-                      {item.reportTitle || item.analysisGoal}
+                      {item.reportTitle || "分析调用"}
                     </strong>
                     <span
                       style={{
@@ -417,4 +452,3 @@ function Block({ title, items }: { title: string; items?: string[] }) {
     </div>
   );
 }
-

@@ -7,7 +7,7 @@ class FakeGenerator:
     async def generate(self, request: AnalysisRequest) -> FullAnalysisReport:
         return FullAnalysisReport(
             report_title="综合报告",
-            overall_summary="根据一份量表生成的测试报告。",
+            overall_summary="根据答题结果与分析信息生成的测试报告。",
             key_strengths=["愿意了解自身状态"],
             key_concerns=[],
             dimensions=[],
@@ -22,7 +22,7 @@ class FakeGenerator:
                 }
             ],
             follow_up_questions=[],
-            limitations=["仅包含一份量表"],
+            limitations=["示例数据"],
             disclaimer="本报告不构成医学诊断。",
         )
 
@@ -30,13 +30,14 @@ class FakeGenerator:
 async def test_service_adds_report_metadata() -> None:
     request = AnalysisRequest.model_validate(
         {
-            "assessments": [
-                {
-                    "scale_id": "demo",
-                    "scale_name": "示例量表",
-                    "total_score": 10,
-                }
-            ]
+            "answer_results": {
+                "assessments": [
+                    {"scale_id": "demo", "total_score": 10},
+                    {"scale_id": "demo-2", "total_score": 8},
+                ]
+            },
+            "analysis_info": {"summary": "中等压力"},
+            "other_info": {},
         }
     )
     settings = Settings(qwen_api_key="test", qwen_model="qwen-test")
@@ -45,5 +46,5 @@ async def test_service_adds_report_metadata() -> None:
 
     assert result.meta.report_id.startswith("rpt_")
     assert result.meta.model == "qwen-test"
-    assert result.meta.assessment_count == 1
+    assert result.meta.assessment_count == 2
     assert result.report.report_title == "综合报告"

@@ -24,7 +24,7 @@ class AnalysisService:
                 report_id=f"rpt_{uuid4().hex}",
                 generated_at=datetime.now(timezone.utc),
                 model=self.settings.qwen_model,
-                assessment_count=len(request.assessments),
+                assessment_count=request.count_answer_items(),
             ),
             report=report,
         )

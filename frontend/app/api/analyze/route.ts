@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import {
   buildAnalyzeRequest,
+  buildPreview,
   createHistoryId,
   saveHistory,
 } from "@/lib/history";
@@ -11,17 +12,28 @@ export const maxDuration = 180;
 
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as {
-    text?: string;
-    analysisGoal?: string;
+    answerResultsRaw?: string;
+    analysisInfoRaw?: string;
+    otherInfoRaw?: string;
   };
-  const text = (body.text || "").trim();
-  if (!text) {
-    return NextResponse.json({ detail: "请输入要分析的文本" }, { status: 400 });
+
+  let analyzeRequest;
+  try {
+    analyzeRequest = buildAnalyzeRequest({
+      answerResultsRaw: body.answerResultsRaw || "",
+      analysisInfoRaw: body.analysisInfoRaw || "",
+      otherInfoRaw: body.otherInfoRaw || "",
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { detail: error instanceof Error ? error.message : "请求格式错误" },
+      { status: 400 },
+    );
   }
 
   const id = await createHistoryId();
   const createdAt = new Date().toISOString();
-  const analyzeRequest = buildAnalyzeRequest(text, body.analysisGoal);
+  const preview = buildPreview(analyzeRequest);
   const apiBase = (
     process.env.SCALYN_API_BASE_URL || "http://127.0.0.1:8000"
   ).replace(/\/$/, "");
@@ -41,8 +53,7 @@ export async function POST(request: NextRequest) {
       const record = await saveHistory({
         id,
         createdAt,
-        inputText: text,
-        analysisGoal: analyzeRequest.analysis_goal,
+        preview,
         status: "error",
         error: detail,
         request: analyzeRequest,
@@ -53,8 +64,7 @@ export async function POST(request: NextRequest) {
     const record = await saveHistory({
       id,
       createdAt,
-      inputText: text,
-      analysisGoal: analyzeRequest.analysis_goal,
+      preview,
       status: "success",
       request: analyzeRequest,
       response: payload,
@@ -65,8 +75,7 @@ export async function POST(request: NextRequest) {
     const record = await saveHistory({
       id,
       createdAt,
-      inputText: text,
-      analysisGoal: analyzeRequest.analysis_goal,
+      preview,
       status: "error",
       error: message,
       request: analyzeRequest,

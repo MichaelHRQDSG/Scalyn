@@ -4,43 +4,50 @@ from pydantic import ValidationError
 from scalyn.models import AnalysisRequest
 
 
-def test_assessment_requires_analyzable_data() -> None:
-    with pytest.raises(ValidationError, match="至少需要总分"):
+def test_other_info_defaults_to_empty_object() -> None:
+    request = AnalysisRequest.model_validate(
+        {
+            "answer_results": {"scale_id": "a", "total_score": 10},
+            "analysis_info": {"level": "moderate"},
+        }
+    )
+    assert request.other_info == {}
+
+
+def test_other_info_null_becomes_empty_object() -> None:
+    request = AnalysisRequest.model_validate(
+        {
+            "answer_results": [{"scale_id": "a"}],
+            "analysis_info": {"ok": True},
+            "other_info": None,
+        }
+    )
+    assert request.other_info == {}
+
+
+def test_rejects_non_json_payload() -> None:
+    with pytest.raises(ValidationError, match="JSON 对象或数组"):
         AnalysisRequest.model_validate(
             {
-                "assessments": [
-                    {
-                        "scale_id": "empty",
-                        "scale_name": "空量表",
-                    }
-                ]
+                "answer_results": "not-json-object",
+                "analysis_info": {},
             }
         )
 
 
-def test_request_accepts_multiple_assessment_formats() -> None:
-    request = AnalysisRequest.model_validate(
+def test_count_answer_items_from_list_and_nested() -> None:
+    listed = AnalysisRequest.model_validate(
         {
-            "assessments": [
-                {
-                    "scale_id": "scored",
-                    "scale_name": "计分量表",
-                    "total_score": 12,
-                    "max_score": 20,
-                },
-                {
-                    "scale_id": "answered",
-                    "scale_name": "逐题量表",
-                    "answers": [
-                        {
-                            "question_id": "q1",
-                            "question_text": "示例题",
-                            "selected": {"option_text": "符合", "value": 1},
-                        }
-                    ],
-                },
-            ]
+            "answer_results": [{"id": 1}, {"id": 2}],
+            "analysis_info": {},
         }
     )
-
-    assert len(request.assessments) == 2
+    nested = AnalysisRequest.model_validate(
+        {
+            "answer_results": {"assessments": [{"id": 1}, {"id": 2}, {"id": 3}]},
+            "analysis_info": {"summary": "ok"},
+            "other_info": {"note": "x"},
+        }
+    )
+    assert listed.count_answer_items() == 2
+    assert nested.count_answer_items() == 3
