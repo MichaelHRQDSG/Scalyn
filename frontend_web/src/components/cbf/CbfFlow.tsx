@@ -2,62 +2,60 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 
 import {
-  SWLS_INSTRUCTION,
-  SWLS_LIKERT_OPTIONS,
-  SWLS_QUESTIONS,
-  countAnswered,
-  createEmptySwlsProgress,
-  interpretSwlsScore,
-  sumSwlsAnswers,
-  type SwlsAnswer,
-  type SwlsProgress,
-} from "../../data/swls";
-import { saveSwlsResultFile } from "../../lib/saveSwlsResult";
+  CBF_DIMENSION_LABEL,
+  CBF_INSTRUCTION,
+  CBF_LIKERT_OPTIONS,
+  CBF_QUESTIONS,
+  countAnsweredCbf,
+  createEmptyCbfProgress,
+  summarizeCbfScores,
+  type CbfAnswer,
+  type CbfProgress,
+} from "../../data/cbf";
 import {
-  clearSwlsProgress,
-  hasIncompleteSwlsProgress,
-  loadSwlsProgress,
-  saveSwlsProgress,
-  startFreshSwlsProgress,
-} from "../../lib/swlsProgress";
+  clearCbfProgress,
+  hasIncompleteCbfProgress,
+  loadCbfProgress,
+  saveCbfProgress,
+  startFreshCbfProgress,
+} from "../../lib/cbfProgress";
+import { saveCbfResultFile } from "../../lib/saveCbfResult";
 import { Atmosphere } from "../Atmosphere";
 
-type SwlsStep = "intro" | "quiz" | "result";
+type CbfStep = "intro" | "quiz" | "result";
 
-interface SwlsFlowProps {
+interface CbfFlowProps {
   onBackHome: () => void;
 }
 
-export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
-  const saved = useMemo(() => loadSwlsProgress(), []);
-  const [step, setStep] = useState<SwlsStep>(
-    saved?.completed ? "result" : "intro",
-  );
-  const [progress, setProgress] = useState<SwlsProgress>(
-    () => saved ?? createEmptySwlsProgress(),
+export function CbfFlow({ onBackHome }: CbfFlowProps) {
+  const saved = useMemo(() => loadCbfProgress(), []);
+  const [step, setStep] = useState<CbfStep>(saved?.completed ? "result" : "intro");
+  const [progress, setProgress] = useState<CbfProgress>(
+    () => saved ?? createEmptyCbfProgress(),
   );
   const [direction, setDirection] = useState(1);
   const [notice, setNotice] = useState<string | null>(null);
   const [resultFile, setResultFile] = useState<string | null>(null);
-  const hasResume = hasIncompleteSwlsProgress();
+  const hasResume = hasIncompleteCbfProgress();
 
-  const totalScore = sumSwlsAnswers(progress.answers);
-  const answeredCount = countAnswered(progress.answers);
-  const currentQuestion = SWLS_QUESTIONS[progress.currentIndex];
+  const answeredCount = countAnsweredCbf(progress.answers);
+  const currentQuestion = CBF_QUESTIONS[progress.currentIndex];
+  const scores = summarizeCbfScores(progress.answers);
 
   const showNotice = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(null), 2200);
   };
 
-  const persist = (next: SwlsProgress) => {
+  const persist = (next: CbfProgress) => {
     setProgress(next);
-    saveSwlsProgress(next);
+    saveCbfProgress(next);
   };
 
-  const persistResultFile = async (answers: SwlsAnswer[]) => {
+  const persistResultFile = async (answers: CbfAnswer[]) => {
     try {
-      const savedFile = await saveSwlsResultFile(answers);
+      const savedFile = await saveCbfResultFile(answers);
       if (savedFile.ok && savedFile.file) {
         setResultFile(savedFile.file);
         showNotice(`结果已写入 ${savedFile.file}`);
@@ -73,7 +71,7 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
 
   const beginQuiz = (resume: boolean) => {
     if (resume) {
-      const current = loadSwlsProgress();
+      const current = loadCbfProgress();
       if (current && !current.completed) {
         setProgress(current);
         setResultFile(null);
@@ -81,7 +79,7 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
         return;
       }
     }
-    const fresh = startFreshSwlsProgress();
+    const fresh = startFreshCbfProgress();
     setProgress(fresh);
     setResultFile(null);
     setDirection(1);
@@ -89,13 +87,13 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
   };
 
   const handleAnswer = (value: number) => {
-    const answers: SwlsAnswer[] = [...progress.answers];
+    const answers: CbfAnswer[] = [...progress.answers];
     answers[progress.currentIndex] = value;
-    const isLast = progress.currentIndex >= SWLS_QUESTIONS.length - 1;
+    const isLast = progress.currentIndex >= CBF_QUESTIONS.length - 1;
     const allDone = answers.every((item) => item != null);
 
     if (isLast && allDone) {
-      const next: SwlsProgress = {
+      const next: CbfProgress = {
         ...progress,
         answers,
         completed: true,
@@ -107,15 +105,14 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
       return;
     }
 
-    const nextIndex = Math.min(progress.currentIndex + 1, SWLS_QUESTIONS.length - 1);
-    const next: SwlsProgress = {
+    const nextIndex = Math.min(progress.currentIndex + 1, CBF_QUESTIONS.length - 1);
+    setDirection(1);
+    persist({
       ...progress,
       answers,
       currentIndex: nextIndex,
       completed: false,
-    };
-    setDirection(1);
-    persist(next);
+    });
   };
 
   const goPrev = () => {
@@ -136,8 +133,8 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
   };
 
   const restart = () => {
-    clearSwlsProgress();
-    const fresh = startFreshSwlsProgress();
+    clearCbfProgress();
+    const fresh = startFreshCbfProgress();
     setProgress(fresh);
     setResultFile(null);
     setDirection(1);
@@ -161,13 +158,14 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
               <button type="button" className="text-btn" onClick={onBackHome}>
                 ← 返回量表入口
               </button>
-              <p className="flow-kicker">SWLS · 生活满意度量表</p>
+              <p className="flow-kicker">CBF-PI-B · 中国大五人格问卷</p>
               <h1 className="flow-title">作答前请先阅读指导语</h1>
-              <p className="flow-copy">{SWLS_INSTRUCTION}</p>
+              <p className="flow-copy">{CBF_INSTRUCTION}</p>
               <ul className="flow-meta">
-                <li>共 5 题，每页只呈现一道题</li>
-                <li>7 点李克特量表（1 = 非常不同意，7 = 非常同意）</li>
-                <li>总分范围 5–35 分，分数越高代表生活满意度越高</li>
+                <li>共 40 题，五个维度各 8 题：神经质、尽责性、宜人性、开放性、外向性</li>
+                <li>6 级计分：1=完全不符合 … 6=完全符合</li>
+                <li>每页一题，选完后自动进入下一题；可返回修改并保存进度</li>
+                <li>带 * 的反向题会在结果中自动反向计分</li>
               </ul>
               <div className="flow-actions">
                 <button type="button" className="primary-btn" onClick={() => beginQuiz(false)}>
@@ -211,20 +209,23 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
                   <div
                     className="progress-fill"
                     style={{
-                      width: `${((progress.currentIndex + 1) / SWLS_QUESTIONS.length) * 100}%`,
+                      width: `${((progress.currentIndex + 1) / CBF_QUESTIONS.length) * 100}%`,
                     }}
                   />
                 </div>
                 <span className="progress-label">
-                  {progress.currentIndex + 1} / {SWLS_QUESTIONS.length}
+                  {progress.currentIndex + 1} / {CBF_QUESTIONS.length}
                 </span>
               </div>
 
-              <p className="flow-kicker">第 {currentQuestion.order} 题</p>
+              <p className="flow-kicker">
+                {CBF_DIMENSION_LABEL[currentQuestion.dimension]} · 第 {currentQuestion.order} 题
+                {currentQuestion.reverse ? "（反向题）" : ""}
+              </p>
               <h2 className="question-text">{currentQuestion.text}</h2>
 
-              <div className="likert" role="radiogroup" aria-label="同意程度">
-                {SWLS_LIKERT_OPTIONS.map((option) => {
+              <div className="likert" role="radiogroup" aria-label="符合程度">
+                {CBF_LIKERT_OPTIONS.map((option) => {
                   const selected = progress.answers[progress.currentIndex] === option.value;
                   return (
                     <button
@@ -256,10 +257,10 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
             </motion.section>
           ) : null}
 
-          {step === "result" && totalScore != null ? (
+          {step === "result" && scores ? (
             <motion.section
               key="result"
-              className="flow-card"
+              className="flow-card result-card"
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
@@ -268,13 +269,28 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
               <button type="button" className="text-btn" onClick={onBackHome}>
                 ← 返回量表入口
               </button>
-              <p className="flow-kicker">SWLS · 作答完成</p>
-              <h1 className="flow-title">你的生活满意度得分</h1>
-              <p className="score-number">{totalScore}</p>
-              <p className="score-label">{interpretSwlsScore(totalScore)}</p>
+              <p className="flow-kicker">CBF-PI-B · 作答完成</p>
+              <h1 className="flow-title">大五人格维度得分</h1>
               <p className="flow-copy">
-                总分范围 5–35 分。分数越高，代表生活满意度越高。本结果仅供自我了解参考，不构成诊断。
+                每个维度由 8 个条目计分（含反向题已换算），单维分数范围一般为 8–48
+                分。分数仅供自我了解参考。
               </p>
+
+              <section className="result-block">
+                <h2 className="result-heading">得分结果：</h2>
+                <ul className="flow-meta">
+                  {scores.dimensions.map((item) => (
+                    <li key={item.key}>
+                      {item.label}：{item.score}
+                    </li>
+                  ))}
+                </ul>
+                <p className="result-line">
+                  五维合计：
+                  <strong>{scores.total}</strong>
+                </p>
+              </section>
+
               {resultFile ? (
                 <p className="flow-copy">结果文件已保存：frontend_web/{resultFile}</p>
               ) : (
@@ -283,6 +299,7 @@ export function SwlsFlow({ onBackHome }: SwlsFlowProps) {
                   dev 启动后再完成作答，结果会写入 frontend_web/result/。
                 </p>
               )}
+
               <div className="flow-actions">
                 <button type="button" className="primary-btn" onClick={restart}>
                   重新作答

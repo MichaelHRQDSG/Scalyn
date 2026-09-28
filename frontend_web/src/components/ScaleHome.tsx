@@ -7,9 +7,10 @@ import { ScaleCard } from "./ScaleCard";
 
 interface ScaleHomeProps {
   onSelectScale: (scale: ScaleItem) => void;
+  openScaleIds: Set<string>;
 }
 
-export function ScaleHome({ onSelectScale }: ScaleHomeProps) {
+export function ScaleHome({ onSelectScale, openScaleIds }: ScaleHomeProps) {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,7 +22,7 @@ export function ScaleHome({ onSelectScale }: ScaleHomeProps) {
   }, [notice]);
 
   const handleSelect = (scale: ScaleItem) => {
-    if (scale.id === "swls") {
+    if (openScaleIds.has(scale.id)) {
       onSelectScale(scale);
       return;
     }
@@ -40,12 +41,18 @@ export function ScaleHome({ onSelectScale }: ScaleHomeProps) {
         >
           <h1 className="brand-mark">Scalyn</h1>
           <p className="brand-lead">在温和的节奏里，选择此刻想了解自己的量表。</p>
-          <p className="brand-note">八个入口 · 单页专注 · SWLS 已可作答</p>
+          <p className="brand-note">八个入口 · 单页专注 · LES / CBF / PSQI / SWLS 已可作答</p>
         </motion.header>
 
         <section className="scale-grid" aria-label="量表入口">
           {scales.map((scale, index) => (
-            <ScaleCard key={scale.id} scale={scale} index={index} onSelect={handleSelect} />
+            <ScaleCard
+              key={scale.id}
+              scale={scale}
+              index={index}
+              open={openScaleIds.has(scale.id)}
+              onSelect={handleSelect}
+            />
           ))}
         </section>
       </div>

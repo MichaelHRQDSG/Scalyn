@@ -22,5 +22,7 @@ playground/data/history/*.json
 # frontend_web (Vite)
 frontend_web/node_modules/
 frontend_web/dist/
+frontend_web/result/*.json
+!frontend_web/result/.gitkeep
 
 tmp/
