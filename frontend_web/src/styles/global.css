@@ -572,6 +572,136 @@ a {
   color: var(--ink);
 }
 
+.subq {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.subq__legend {
+  padding: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  min-height: 2.35rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 252, 248, 0.72);
+  color: var(--ink-soft);
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  border-color: color-mix(in srgb, var(--tone-mist) 70%, #8a8178);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.chip.is-selected {
+  border-color: color-mix(in srgb, var(--tone-sage) 65%, #6d655e);
+  background: color-mix(in srgb, var(--tone-sage) 28%, white);
+  color: var(--tone-sage-ink);
+  font-weight: 600;
+}
+
+.subq.is-disabled {
+  opacity: 0.48;
+}
+
+.chip:disabled {
+  cursor: not-allowed;
+  transform: none;
+}
+
+.chip:disabled:hover,
+.chip:disabled:focus-visible {
+  border-color: var(--line);
+  transform: none;
+}
+
+.field-block {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.field-hint {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--ink-mute);
+}
+
+.text-input {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 252, 248, 0.86);
+  color: var(--ink);
+  font: inherit;
+}
+
+.text-input:focus {
+  outline: 2px solid color-mix(in srgb, var(--tone-mist) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.text-input--narrow {
+  width: min(8rem, 100%);
+}
+
+.result-card {
+  gap: 1.25rem;
+}
+
+.result-block {
+  display: grid;
+  gap: 0.55rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--line);
+}
+
+.result-heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--tone-sage-ink);
+}
+
+.result-line {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.result-line strong {
+  margin-left: 0.35rem;
+  font-family: var(--font-brand);
+  font-size: 1.35rem;
+  color: var(--tone-clay-ink);
+}
+
 @media (max-width: 760px) {
   .shell {
     width: min(100% - 1.5rem, 1120px);

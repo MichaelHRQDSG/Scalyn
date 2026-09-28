@@ -5,10 +5,11 @@ import type { ScaleItem } from "../data/scales";
 interface ScaleCardProps {
   scale: ScaleItem;
   index: number;
+  open: boolean;
   onSelect: (scale: ScaleItem) => void;
 }
 
-export function ScaleCard({ scale, index, onSelect }: ScaleCardProps) {
+export function ScaleCard({ scale, index, open, onSelect }: ScaleCardProps) {
   return (
     <motion.button
       type="button"
@@ -28,9 +29,9 @@ export function ScaleCard({ scale, index, onSelect }: ScaleCardProps) {
       <h2 className="scale-card__name">{scale.name}</h2>
       <p className="scale-card__blurb">{scale.blurb}</p>
       <div className="scale-card__footer">
-        <span>{scale.id === "swls" ? "可开始作答" : "入口已准备"}</span>
+        <span>{open ? "可开始作答" : "入口已准备"}</span>
         <span className="scale-card__cta">
-          {scale.id === "swls" ? "进入" : "选择"}
+          {open ? "进入" : "选择"}
           <span className="scale-card__cta-arrow" aria-hidden="true">
             →
           </span>
