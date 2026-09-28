@@ -18,4 +18,9 @@ frontend/.next/
 frontend/.env.local
 frontend/data/history/*.json
 !frontend/data/history/.gitkeep
+
+# frontend_web (Vite)
+frontend_web/node_modules/
+frontend_web/dist/
+
 tmp/
